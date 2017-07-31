@@ -77,7 +77,7 @@ class testManager :
                     t0=time.time()
                     M.fit(x_train,y_train)
                     t1=time.time()
-                    r=M.test(x_test,y_test)
+                    r=M.score(x_test,y_test)
                     t2=time.time()
                     
                     R.append(r)
