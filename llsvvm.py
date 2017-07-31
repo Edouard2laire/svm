@@ -132,39 +132,21 @@ class llsvm :
         k=0
         m=self.nb_anchor
         (n,d)=np.shape(x)
-        #print(n,d,m)
         W=np.zeros((m,d))
         B=np.zeros((m,1))
         count=skip
-        
-        #x_test=np.linspace(-2,2,100)
-        #y_test=np.linspace(-2,2,100)
-        
+
         while(t <= E):
             L=np.random.permutation(range(n))
             for i in  L  :
                 x0=x[i]
                 y0 = y[i]
-                
-                self.W=W
-                self.B=B
-                
-                #print(t,k)
-                #if(k%500==1 or k <=6 ):
-                 #   tool.draw(x,y,M.anchor,x_test,y_test,M.predict,highlight=x0,fig=2)
-
-    
                 gamma_t=self.localCoding(x0, sigma_inv)
-                #print(gamma_t)
                 H_t=1 - y0*( np.dot(np.dot(gamma_t,W) , x0) + np.dot(gamma_t,B))
-                #print(t,k,y0,H_t)
                 if H_t > 0 :
                     for j in range(m):
                         W[j,:] += y0*gamma_t[j]*x0/(l*(k+t0))
-                            
-                    #W= W + y[t]*gamma_t*x0/(l*(t+t0))
                     B= B + y0*gamma_t[:,None]/(l*(k+t0))
-                #print("norme",np.linalg.norm(W))
                 count-=1
                 if count <=0 :
                     W=W * ( 1 - skip/(k+t0))

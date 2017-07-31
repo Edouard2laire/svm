@@ -288,7 +288,7 @@ def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[]
         # plt.axis('equal')
 
 
-        ctr = plt.contour(x, y, Z, [-0.1,0.0, +0.1])
+        ctr = plt.contour(x, y, Z, [-1,0.0, +1])
         plt.clabel(ctr,fontsize=10, fmt='%3.2f')
 
         plt.scatter([abs for [abs, ord] in x_p], [ord for [abs, ord] in x_p], c='red')
@@ -361,8 +361,8 @@ def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[]
             else:
                 x_m.append(x_e[i])
 
-        plt.figure(fig)
-        plt.clf()
+        #plt.figure(fig)
+        #plt.clf()
         # plt.axis('equal')
 
 
@@ -382,8 +382,8 @@ def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[]
         if (highlight[0] != None):
             plt.scatter([highlight[0]],[highlight[1]], c = 'yellow')
 
-        plt.show()
-        plt.pause(0.1)
+        #plt.show()
+        #plt.pause(0.1)
 
 def draw2(centers, x_t, y_t, predictor, highlight=[None, None], poids=[]):
     x, y = np.meshgrid(x_t, y_t)
