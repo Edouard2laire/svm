@@ -1,6 +1,8 @@
 
 class svm :
-    
+    def __init__(self):
+        pass
+
     """
     @brief Fit the SVM model according to the given training data.
     """

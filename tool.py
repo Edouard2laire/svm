@@ -347,6 +347,7 @@ def square_c(xi,xj,gamma):
 
 
 def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[],fig=1):
+
     if( np.shape(x_e)[1] <= 2):
         x, y = np.meshgrid(x_t, y_t)
         f = np.vectorize(lambda x, y: predictor(np.array([x, y])))
@@ -361,7 +362,7 @@ def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[]
             else:
                 x_m.append(x_e[i])
 
-        #plt.figure(fig)
+        plt.figure(fig)
         #plt.clf()
         # plt.axis('equal')
 
@@ -382,7 +383,7 @@ def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[]
         if (highlight[0] != None):
             plt.scatter([highlight[0]],[highlight[1]], c = 'yellow')
 
-        #plt.show()
+        plt.show()
         #plt.pause(0.1)
 
 def draw2(centers, x_t, y_t, predictor, highlight=[None, None], poids=[]):

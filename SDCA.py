@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from random import randint
 from time import time
 
-
+from svm import svm
 
 class SDCA(svm) :
     name="SDCA"
