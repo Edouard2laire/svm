@@ -142,36 +142,7 @@ def load4(fichier,normalised=True,exemple=-1):
 
     return X,Y
 
-def decode3(ligne,normalised=True,k=0) :
-    if k > 0:
-        L = ligne.strip('\n').split(',')
-        label = float(L[0])
-        coord = np.array(L[1:],dtype=float)
 
-        if (label == 0):
-            y=-1.0
-        else:
-            y=+1.0
-        if normalised :
-            coord/=np.linalg.norm(coord)
-
-        return coord,y
-
-def decode4(ligne,normalised=False,k=0):
-    L = ligne.strip('\n').split('	')
-    label=float(L[-1])
-    coord=L[0:-1]
-
-    if(label== 1):
-        y=-1.0
-    else:
-        y=+1.0
-
-    x=np.array(coord,dtype=float)
-    if normalised:
-        for i in range(len(x)):
-            x[i]/=255
-    return x,y
 
 
 def SKMeans(X,nb_anchor=10, eps=0.001, iteration=500, eps_norm=1e-6):
@@ -268,44 +239,6 @@ def SKMeans(X,nb_anchor=10, eps=0.001, iteration=500, eps_norm=1e-6):
         # Determine the gamma vector that appromimate x
 
 
-def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[],fig=1):
-    if( np.shape(x_e)[1] <= 2):
-        x, y = np.meshgrid(x_t, y_t)
-        f = np.vectorize(lambda x, y: predictor(np.array([x, y])))
-        Z = f(x, y)
-
-        x_p=[]
-        x_m=[]
-
-        for i  in range(len(x_e)):
-            if y_e[i] > 0 :
-                x_p.append(x_e[i])
-            else:
-                x_m.append(x_e[i])
-
-        plt.figure(fig)
-        plt.clf()
-        # plt.axis('equal')
-
-
-        ctr = plt.contour(x, y, Z, [-1,0.0, +1])
-        plt.clabel(ctr,fontsize=10, fmt='%3.2f')
-
-        plt.scatter([abs for [abs, ord] in x_p], [ord for [abs, ord] in x_p], c='red')
-        plt.scatter([abs for [abs, ord] in x_m], [ord for [abs, ord] in x_m], c='blue')
-
-        if(len(poids) >= 1):
-            size=poids*1000
-            plt.scatter([abs for [abs, ord] in centers], [ord for [abs, ord] in centers], s=size, c = 'green')
-        else:
-            plt.scatter([abs for [abs, ord] in centers], [ord for [abs, ord] in centers], c = 'green')
-
-
-        if (highlight[0] != None):
-            plt.scatter([highlight[0]],[highlight[1]], c = 'yellow')
-
-        plt.show()
-        plt.pause(0.1)
 
 def gauss(xi,xj,gamma):
     norme = np.linalg.norm(xi-xj)
@@ -386,26 +319,3 @@ def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[]
         plt.show()
         #plt.pause(0.1)
 
-def draw2(centers, x_t, y_t, predictor, highlight=[None, None], poids=[]):
-    x, y = np.meshgrid(x_t, y_t)
-    f = np.vectorize(lambda x, y: predictor(np.array([x, y])))
-    Z = f(x, y)
-
-
-    # plt.axis('equal')
-
-
-    ctr = plt.contour(x, y, Z, [-0.1,0.0, +0.1])
-    plt.clabel(ctr,fontsize=10, fmt='%3.2f')
-
-    if(len(poids) >= 1):
-        size=poids*1000
-        plt.scatter([abs for [abs, ord] in centers], [ord for [abs, ord] in centers], s=size, c = 'green')
-    else:
-        plt.scatter([abs for [abs, ord] in centers], [ord for [abs, ord] in centers], c = 'green')
-
-    if (highlight[0] != None):
-        plt.scatter([highlight[0]],[highlight[1]], c = 'yellow')
-
-    plt.show()
-    plt.pause(0.1)
