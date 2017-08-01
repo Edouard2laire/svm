@@ -7,6 +7,7 @@ import numpy as np
 import time
 import OMLLKM
 import linereader
+import lsvm
 
 class testManager :
     def __init__(self,svm=None,lkernel=None,datasetPath="",logPath="",nbTest=5):
@@ -56,11 +57,14 @@ class testManager :
             
             log.write("Donnee entrainement : {}\n".format(m))
             log.write("Donnee test : {}\n".format(n-m))
+            best={"accuracy":0,"vAccuracy":0,"training":0,"vTraining":0,"test":0,"vtest":0,"param":{}}
 
             for param in self.params :
                 print(param)
                 log.write("Parametres: {}\n\n".format(param))
                 M=self.svm(**param["constructeur"])
+
+                resultat={"accuracy":0,"vAccuracy":0,"training":0,"vTraining":0,"test":0,"vtest":0}
                 R=[]
                 Rtrain=[]
                 Rtest=[]
@@ -83,37 +87,38 @@ class testManager :
                     R.append(r)
                     Rtrain.append(t1-t0)
                     Rtest.append(t2-t1)
-                    
-                log.write("Average accuracy :{} +- {} \n".format(np.mean(R),np.std(R)))
-                print("Average accuracy :{} +- {} \n".format(np.mean(R),np.std(R)))
-                print("Max/min accuracy :{} / {} \n".format(max(R),min(R)))
+                resultat["accuracy"]=np.mean(R)
+                resultat["vAccuracy"]=np.std(R)
+                resultat["training"]=np.mean(Rtrain)/len(x_train)
+                resultat["vTraining"]=np.std(Rtrain)/len(x_train)
+                resultat["test"]=np.mean(Rtest)/len(x_test)
+                resultat["vtest"]=np.std(Rtest)/len(x_test)
 
-                log.write("Max/min accuracy :{} / {} \n".format(max(R),min(R)))
-                
-                log.write("Training per sample :{} +- {} \n".format(np.mean(Rtrain)/len(x_train),np.std(Rtrain)/len(x_train) ))
-                log.write("Test time per sample :{} +- {} \n".format(np.mean(Rtest)/len(x_test),np.std(Rtest)/len(x_test) ))
+                if resultat["accuracy"] > best["accuracy"] :
+                    best=resultat
+                    best["param"]=param
+
+                log.write("Average accuracy :{} +- {} \n".format(resultat["accuracy"],resultat["vAccuracy"]))
+                print("Average accuracy :{} +- {} \n".format(resultat["accuracy"],resultat["vAccuracy"]))
+                log.write("Training per sample :{} +- {} \n".format(resultat["training"],resultat["vTraining"] ))
+                log.write("Test time per sample :{} +- {} \n".format(resultat["test"],resultat["vtest"] ))
                 
                 log.write("\n -------------- \n")
+            log.write("Meilleur test \n")
+            log.write("Parametres: {}\n\n".format(best["param"]))
+            log.write("Average accuracy :{} +- {} \n".format(best["accuracy"], best["vAccuracy"]))
+            log.write("Training per sample :{} +- {} \n".format(best["training"], best["vTraining"]))
+            log.write("Test time per sample :{} +- {} \n".format(best["test"], best["vtest"]))
         log.close()
 
 datasetPath="/users/edoudela12/PycharmProjects/Edouard/datasets"
 logPath="/users/edoudela12/PycharmProjects/Edouard/logs"
 
 
-test = testManager(datasetPath="/home/edoudela",logPath=logPath,nbTest=2,svm=MLLKM2.MLLKM2,lkernel=tool.lgauss)
-test.addDataSet(["SUSY.csv"],tool.load3)
-test.addParam(param={"nb_anchor": 1024, "lkernel": tool.lgauss,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 0.5,"E":1})
-test.addParam(param={"nb_anchor": 10096, "lkernel": tool.lgauss ,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 1,"E":1})
+test = testManager(datasetPath=datasetPath,logPath=logPath,nbTest=5,svm=lsvm.lsvm)
+test.addDataSet(["sonar_scale","sonar_scale","diabetes_scale","sonar_scale"],tool.load)
 
-
-test.addParam(param={"nb_anchor": 1024, "lkernel": tool.lgauss_c,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 0.5,"E":1})
-test.addParam(param={"nb_anchor": 10096, "lkernel": tool.lgauss_c,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 1,"E":1})
-
-
-test.addParam(param={"nb_anchor": 1024, "lkernel": tool.square,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 0.5,"E":1})
-test.addParam(param={"nb_anchor": 10096, "lkernel": tool.square,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 0.5,"E":1})
-
-test.addParam(param={"nb_anchor": 1024, "lkernel": tool.square_c,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 0.5,"E":1})
-test.addParam(param={"nb_anchor": 10096, "lkernel": tool.square_c,"pB": 0.5, "pc":0.1, "l": 1e-6, "t0": 1,"gamma": 0.5,"E":1})
-
-test.overview("susy")
+for p in np.linspace(0.001,0.5,10):
+    print(p)
+    test.addParam(param={"b0":0,"E":10,"l":0.1,"t0":1.0,"p":0.001})
+test.overview("lsvm")
