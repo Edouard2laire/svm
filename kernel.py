@@ -63,7 +63,7 @@ predict=[]
 perf=[]
 nom=[]
 couleur=[]
-for resultat in tab3 :
+for resultat in tab :
     predict.append(resultat["Predict"])
     training.append(resultat["Training"])
     perf.append(resultat["Performance"])
@@ -75,7 +75,7 @@ for performance in perf:
     poids.append( 10**(performance/PerfMin*1)  )
 
 fig=plt.figure(1)
-plt.title("Performance des algoritmes sur le dataset DIABETES")
+plt.title("Performance des algoritmes sur le dataset IONOSPHERE")
 ax=fig.add_subplot(111)
 #plt.scatter(training,predict,s=None)
 plt.xlabel("<-- Temps d'entrainement rapide(ms)" )
@@ -91,7 +91,7 @@ for i in range(len(perf)):
     circ=mpatches.Ellipse((training[i], predict[i]), width=x ,height=y, color=couleur[i], fill=True,angle=90)
     e.append(circ)
     plt.annotate("{}".format(i), (training[i],predict[i]),horizontalalignment='center',color="white")
-    plt.annotate("{}%".format(perf[i]), (training[i],predict[i] - y/2 ),horizontalalignment='center')
+    plt.annotate("{}%".format(perf[i]), (training[i],predict[i] + 0.5*y*(-1)**(i+1) ),horizontalalignment='center')
 
     ax.add_artist(circ)
     circ.set_clip_box(ax.bbox)
