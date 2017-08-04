@@ -1,10 +1,17 @@
 import numpy as np
-import tool
+#import tool
 import matplotlib.pyplot as plt
-from time import time
+import time
 
-from svm import svm
+def lgauss_opt(xi,xj,gamma,b=1):
+    diff=xi-xj
 
+    if b==0 :
+        return np.multiply( 0.0,diff)
+        
+    norme = np.linalg.norm(diff)
+    expV=b*np.exp(-gamma*norme*norme)
+    return np.multiply( expV,diff)
 
 class MLLKM2(svm):
     name="MLLKM2"
@@ -18,7 +25,7 @@ class MLLKM2(svm):
         l and t0 are also param for the stochastic descent
         E is the number of epoch       
     """
-    def __init__(self,nb_anchor=10,lkernel=tool.lgauss,pB=0.001,pD=0.6,pc=0.1,pW=0.9, l=1e-6, t0=0.1, E=20, gamma=2.0):
+    def __init__(self,nb_anchor=10,lkernel=lgauss,pB=0.001,pD=0.6,pc=0.1,pW=0.9, l=1e-6, t0=0.1, E=20, gamma=0.8):
         svm.__init__(self)
 
         self.nb_anchor=nb_anchor
@@ -36,12 +43,48 @@ class MLLKM2(svm):
         self.E=E
         self.gamma=gamma
         self.lkernel = lkernel
+        
+        self.m=0
+        self.t=1
+    
+    def addToAnchor(self,x0,d):
+        if self.m==0 :
+            self.anchor=np.array([x0])
+            self.anchorU = np.array([x0])
+            self.distance=np.array([0.0])
+            self.W=np.zeros((1, d))
+            self.B = np.array([1])
+            self.m+=1
+        elif self.m < self.nb_anchor:
+            self.anchor = np.append( self.anchor,[x0],axis=0)
+            self.anchorU = np.append( self.anchorU,[x0],axis=0)
+            self.distance=np.concatenate((self.distance,[0.0]),axis=0)
+    
+            self.B=np.concatenate((self.B,[1.0/self.m]),axis=0)
+            self.B/=np.linalg.norm(self.B,ord=1)
+            self.W=np.concatenate((self.W,np.zeros((1,d))),axis=0)
+            self.m+=1
+            
+    def updateAnchors(self,x0):
+        dmin=np.linalg.norm(x0-self.anchor[0])
+        k_min=0
 
+        for k in range(self.m):
+            de=np.linalg.norm(x0-self.anchor[k])
+            if de<dmin :
+                dmin=de
+                k_min=k
+        temp1=(1.0 - self.pc/(self.t+self.t0) )*self.anchor[k_min]
+        temp2=x0*self.pc/(self.t+self.t0)
+        self.anchor[k_min]= temp1 + temp2
 
+        distance_hat=np.linalg.norm(x0-self.anchor[k_min])
+        if distance_hat < self.distance[k_min] :
+            self.anchorU[k_min]=x0
+            self.distance[k_min]=distance_hat
+    
 
-    def fit(self, x, y):
-        t = 1
-        m = 0
+    def fit(self, x, y):        
         n, d = np.shape(x)
         delta_buf = 0
         e = 0
@@ -51,75 +94,43 @@ class MLLKM2(svm):
             for i in L:
                 x0 = x[i]
                 y0 = y[i]
+                                
+                if self.m < self.nb_anchor :
+                    self.addToAnchor(x0,d)
+                else :
+                    self.updateAnchors(x0)
 
-                if m==0 :
-                    self.anchor=np.array([x0])
-                    self.anchorU = np.array([x0])
-                    distance=np.array([0.0])
-                    W=np.zeros((1, d))
-                    B = np.array([1])
-                    m+=1
-                elif m < self.nb_anchor:
-                    self.anchor = np.append( self.anchor,[x0],axis=0)
-                    self.anchorU = np.append( self.anchor,[x0],axis=0)
-                    distance=np.concatenate((distance,[0.0]),axis=0)
-
-                    B=np.concatenate((B,[1.0/m]),axis=0)
-                    B/=np.linalg.norm(B,ord=1)
-                    W=np.concatenate((W,np.zeros((1,d))),axis=0)
-                    m+=1
-
-                dmin=np.linalg.norm(x0-self.anchor[0])
-                k_min=0
-
-                for k in range(m):
-                    de=np.linalg.norm(x0-self.anchor[k])
-                    if de<dmin :
-                        dmin=de
-                        k_min=k
-                temp1=(1.0 - self.pc/(t+self.t0) )*self.anchor[k_min]
-                temp2=x0*self.pc/(t+self.t0)
-                self.anchor[k_min]= temp1 + temp2
-
-                distance_hat=np.linalg.norm(x0-self.anchor[k_min])
-                if distance_hat < distance[k_min] :
-                    self.anchorU[k_min]=x0
-                    distance[k_min]=distance_hat
-
-                # H_t=1 - y0*B*W*K
-                H_t = 0.0
-                for j in range(len(B)):
-                    H_t += B[j] * np.dot(W[j], self.lkernel(x0, self.anchorU[j], self.gamma))
-
+                # H_t=1 - y0*B*W*K // = self.predict(x0)
+                K=self.computeKernel(x0)
+                H_t= np.sum( np.multiply(self.W , K ) )
                 if y0 * H_t < 1:
-                    for j in range(len(B)):
-                        phi_j = self.lkernel(x0, self.anchorU[j], self.gamma)
-                        Remp = (self.pW*y0 * B[j] / (n * self.l * (t + self.t0))) * phi_j
-                        W[j] = (1 - self.pW*B[j] / (t + self.t0)) * W[j] + Remp
-                    if t >  self.nb_anchor:
+                    for j in range(len(self.B)):
+                        Remp = self.pW*y0/ (n * self.l * (self.t + self.t0) ) * K[j]
+                        self.W[j] = (1 - self.pW*self.B[j] / (self.t + self.t0)) * self.W[j] + Remp
+                    if self.t >  self.nb_anchor:
                         delta = []
-                        for j in range(len(B)):
-                            norme = np.linalg.norm(W[j], ord=2)
-                            phi_j = self.lkernel(x0, self.anchorU[j], self.gamma)
-                            delta.append(0.5 * norme * norme - (y0 / (n * self.l)) * np.dot(W[j], phi_j))
+                        for j in range(len(self.B)):
+                            norme = np.linalg.norm(self.W[j])
+                            delta.append(0.5 * norme * norme - (y0 / (n *self.B[j]*self.l)) * np.dot(self.W[j],K[j]))
 
                         delta = np.array(delta)
-                        delta_buf = (1 - self.pD/t) * delta_buf + (self.pD/t)* delta
+                        delta_buf = (1 - self.pD/self.t) * delta_buf + (self.pD/self.t)* delta
                         arg = np.argmax(-delta_buf)
-                        D = np.array([1 if k == arg else 0 for k in range(m)])
-                        B = (1 - self.pB / t) * B + (self.pB / t) * D
-                        B[np.where(B <= 1e-5)] = 0
-                t += 1
-                self.W = W
-                self.B = B
+                        D = np.array([1 if k == arg else 0 for k in range(self.m)])
+                        self.B = (1 - self.pB / self.t) * self.B + (self.pB / self.t) * D
+                        self.B[np.where(self.B <= 1e-5)] = 0
+                self.t += 1
             e += 1
-
-        self.B = B
-        self.W = W
+  
+    def computeKernel(self,x):
+        n,d=self.anchorU.shape
+        K=np.zeros( (n,d) )
+        for i in range( n ) :
+            K[i] = self.lkernel(x,self.anchorU[i],self.gamma,b=self.B[i] )
+        return K    
 
     def predict(self, x):
-        s = 0
-        for j in range(len(self.B)):
-            s += self.B[j] * np.dot(self.W[j], self.lkernel(x, self.anchor[j], self.gamma))
-        return s
+        K=self.computeKernel(x)
+        return np.sum( np.multiply(self.W , K ) )
+
 
