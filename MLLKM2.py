@@ -111,7 +111,7 @@ class MLLKM2(svm):
                         delta = []
                         for j in range(len(self.B)):
                             norme = np.linalg.norm(self.W[j])
-                            delta.append(0.5 * norme * norme - (y0 / (n *self.B[j]*self.l)) * np.dot(self.W[j],K[j]))
+                            delta.append(0.5 * norme * norme - (y0 / (n*self.l)) * np.dot(self.W[j],K[j]))
 
                         delta = np.array(delta)
                         delta_buf = (1 - self.pD/self.t) * delta_buf + (self.pD/self.t)* delta
