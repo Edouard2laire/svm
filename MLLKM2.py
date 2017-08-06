@@ -12,7 +12,7 @@ def lgauss_test(xi,xj,gamma):
         
     norme = np.linalg.norm(diff)
     expV=np.exp(-gamma*norme*norme)
-    return np.multiply( expV,diff)
+    return expV*diff
 
 class MLLKM2(svm):
     name="MLLKM2"
@@ -108,7 +108,10 @@ class MLLKM2(svm):
                 if y0 * H_t < 1:
                     self.W+= self.pW*y0/ (n * self.l * (self.t + self.t0) ) *K*self.B[:,None] - self.pW / (self.t + self.t0) * self.W*self.B[:,None]                    
                     if self.t >  self.nb_anchor:
-                        delta= 0.5*np.dot(np.multiply(M.W,M.W),np.ones((d,1))) - (y0 / (n *self.l)) * np.inner(  self.W,K)[:,0]
+                        delta = np.linalg.norm(self.W,axis=1)**2
+                        for j in range(len(self.B)):		
+                            delta[j] -= (y0 / (n*self.l)) * np.dot(self.W[j],K[j])
+                            
                         delta_buf = (1 - self.pD/self.t) * delta_buf + (self.pD/self.t)* delta
                         arg = np.argmax(-delta_buf)
                         D = np.array([1 if k == arg else 0 for k in range(self.m)])
