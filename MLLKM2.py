@@ -7,13 +7,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-def lgauss_test(xi,xj,gamma):
-    diff=xi-xj
-        
+def lgauss_test(diff,gamma=0.95):
+    #iff=xi-xj
     norme = np.linalg.norm(diff)
     expV=np.exp(-gamma*norme*norme)
     return expV*diff
-
+def lgauss_test2(diff,gamma=0.95):
+    #iff=xi-xj
+    norme = np.linalg.norm(diff,axis=1)
+    expV=np.exp(-gamma*norme*norme)[:,None]
+    return expV*diff
 class MLLKM2(svm):
     name="MLLKM2"
 
@@ -40,13 +43,12 @@ class MLLKM2(svm):
         self.pD=pD
         self.pc=pc
         self.l=l
-        self.t0=t0
         self.E=E
         self.gamma=gamma
         self.lkernel = lkernel
         
         self.m=0
-        self.t=1
+        self.t=1+t0
     
     def addToAnchor(self,x0,d):
         if self.m==0 :
@@ -71,15 +73,12 @@ class MLLKM2(svm):
     def updateAnchors(self,x0):
         dmin=np.linalg.norm(x0-self.anchor[0])
         k_min=0
+        
+        diff=np.subtract(x0,self.anchorU)
+        dist_hat=np.linalg.norm(diff,axis=1)
+        k_min=np.argmin(dist_hat)
 
-        for k in range(self.m):
-            de=np.linalg.norm(x0-self.anchor[k])
-            if de<dmin :
-                dmin=de
-                k_min=k
-        temp1=(1.0 - self.pc/(self.t+self.t0) )*self.anchor[k_min]
-        temp2=x0*self.pc/(self.t+self.t0)
-        self.anchor[k_min]= temp1 + temp2
+        self.anchor[k_min]= (1.0 - self.pc/self.t )*self.anchor[k_min] + x0*self.pc/self.t
 
         distance_hat=np.linalg.norm(x0-self.anchor[k_min])
         if distance_hat < self.distance[k_min] :
@@ -103,15 +102,16 @@ class MLLKM2(svm):
                 else :
                     self.updateAnchors(x0)
 
-                K=self.computeKernel(x0)
+                diff=np.subtract(x0,self.anchorU)
+                K=self.lkernel(diff,self.gamma)
+                
                 H_t= np.sum( np.multiply(self.W , K*self.B[:,None]) ) 
                 if y0 * H_t < 1:
-                    self.W+= self.pW*y0/ (n * self.l * (self.t + self.t0) ) *K*self.B[:,None] - self.pW / (self.t + self.t0) * self.W*self.B[:,None]                    
-                    if self.t >  self.nb_anchor:
+                    self.W+= self.pW*y0/ (n * self.l *self.t ) *K*self.B[:,None] - (self.pW /self.t) * self.W*self.B[:,None]
+                    if self.m >  self.nb_anchor:
                         delta = np.linalg.norm(self.W,axis=1)**2
-                        for j in range(len(self.B)):		
-                            delta[j] -= (y0 / (n*self.l)) * np.dot(self.W[j],K[j])
-                            
+                        delta-= (y0 / (n*self.l)) * np.einsum('ij,ij->i', self.W, K)
+                        
                         delta_buf = (1 - self.pD/self.t) * delta_buf + (self.pD/self.t)* delta
                         arg = np.argmax(-delta_buf)
                         D = np.array([1 if k == arg else 0 for k in range(self.m)])
@@ -120,14 +120,8 @@ class MLLKM2(svm):
                         self.B[np.where(self.B <= 1e-5)] = 0
                 self.t += 1
             e += 1
-
-    def computeKernel(self,x):
-        n,d=self.anchorU.shape
-        K=np.zeros( (n,d) )
-        for i in range( n ) :
-            K[i] = self.lkernel(x,self.anchorU[i],self.gamma)
-        return K    
-
     def predict(self, x):
-        K=self.computeKernel(x)
+        diff=np.subtract(x,self.anchorU)
+        K=self.lkernel(diff,self.gamma)
+
         return np.sum( np.multiply(self.W , K*self.B[:,None] ) )
