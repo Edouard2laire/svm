@@ -2,15 +2,16 @@ import numpy as np
 #import tool
 import matplotlib.pyplot as plt
 import time
+import numpy as np
+#import tool
+import matplotlib.pyplot as plt
+import time
 
-def lgauss_opt(xi,xj,gamma,b=1):
+def lgauss_test(xi,xj,gamma):
     diff=xi-xj
-
-    if b==0 :
-        return np.multiply( 0.0,diff)
         
     norme = np.linalg.norm(diff)
-    expV=b*np.exp(-gamma*norme*norme)
+    expV=np.exp(-gamma*norme*norme)
     return np.multiply( expV,diff)
 
 class MLLKM2(svm):
@@ -64,6 +65,8 @@ class MLLKM2(svm):
             self.B/=np.linalg.norm(self.B,ord=1)
             self.W=np.concatenate((self.W,np.zeros((1,d))),axis=0)
             self.m+=1
+        
+        
             
     def updateAnchors(self,x0):
         dmin=np.linalg.norm(x0-self.anchor[0])
@@ -100,37 +103,28 @@ class MLLKM2(svm):
                 else :
                     self.updateAnchors(x0)
 
-                # H_t=1 - y0*B*W*K // = self.predict(x0)
                 K=self.computeKernel(x0)
-                H_t= np.sum( np.multiply(self.W , K ) )
+                H_t= np.sum( np.multiply(self.W , K*self.B[:,None]) ) 
                 if y0 * H_t < 1:
-                    for j in range(len(self.B)):
-                        Remp = self.pW*y0/ (n * self.l * (self.t + self.t0) ) * K[j]
-                        self.W[j] = (1 - self.pW*self.B[j] / (self.t + self.t0)) * self.W[j] + Remp
+                    self.W+= self.pW*y0/ (n * self.l * (self.t + self.t0) ) *K*self.B[:,None] - self.pW / (self.t + self.t0) * self.W*self.B[:,None]                    
                     if self.t >  self.nb_anchor:
-                        delta = []
-                        for j in range(len(self.B)):
-                            norme = np.linalg.norm(self.W[j])
-                            delta.append(0.5 * norme * norme - (y0 / (n*self.B[j]self.l)) * np.dot(self.W[j],K[j]))
-
-                        delta = np.array(delta)
+                        delta= 0.5*np.dot(np.multiply(M.W,M.W),np.ones((d,1))) - (y0 / (n *self.l)) * np.inner(  self.W,K)[:,0]
                         delta_buf = (1 - self.pD/self.t) * delta_buf + (self.pD/self.t)* delta
                         arg = np.argmax(-delta_buf)
                         D = np.array([1 if k == arg else 0 for k in range(self.m)])
+                        
                         self.B = (1 - self.pB / self.t) * self.B + (self.pB / self.t) * D
                         self.B[np.where(self.B <= 1e-5)] = 0
                 self.t += 1
             e += 1
-  
+
     def computeKernel(self,x):
         n,d=self.anchorU.shape
         K=np.zeros( (n,d) )
         for i in range( n ) :
-            K[i] = self.lkernel(x,self.anchorU[i],self.gamma,b=self.B[i] )
+            K[i] = self.lkernel(x,self.anchorU[i],self.gamma)
         return K    
 
     def predict(self, x):
         K=self.computeKernel(x)
-        return np.sum( np.multiply(self.W , K ) )
-
-
+        return np.sum( np.multiply(self.W , K*self.B[:,None] ) )
