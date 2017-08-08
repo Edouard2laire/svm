@@ -101,7 +101,7 @@ def load3(fichier,normalised=True,exemple=10000):
 
     return X,Y
 
-def load4(fichier,normalised=True,exemple=-1):
+def load4(fichier,normalised=False,exemple=-1):
     f = open(fichier, 'r')
     y = []
     x = []
@@ -109,11 +109,11 @@ def load4(fichier,normalised=True,exemple=-1):
     k=0
     for ligne in f:
         if n==0 :
-            label = ligne.split('	')#On determine le nombre de coordonees
+            label = ligne.split('\t')#On determine le nombre de coordonees
             n=len(label)-1
 
         else:
-            L = ligne.strip('\n').split('	')
+            L = ligne.strip('\n').split('\t')
             label=float(L[-1])
             coord=L[0:n]
 
@@ -249,25 +249,26 @@ def linear(xi,xj,sigma):
     #print(norme,1 - gamma*norme*norme)
     return max(0.0, 1 - sigma*norme*norme)
 
-def lgauss(xi,xj,gamma):
-    norme = np.linalg.norm(xi-xj)
-    return np.exp(-gamma*norme*norme)*(xi-xj)
+def lgauss(diff,gamma=0.95):
+    #iff=xi-xj
+    norme = np.linalg.norm(diff,axis=1)
+    expV=np.exp(-gamma*norme*norme)[:,None]
+    return expV*diff
+    
+def lgauss_c(diff,gamma=0.95):
+    #diff=xi-xj
+    return np.multiply(np.exp(-gamma*np.multiply(diff,diff)),diff)
 
-def lsigmo(xi,xj,c):
-    return np.tanh( -np.dot(xi,xj)/2 +c)*(xi-xj)
 
-def lgauss_c(xi,xj,gamma):
-    return np.multiply(np.exp(-gamma*np.multiply(xi-xj, xi-xj)), xi-xj)
+def square(diff,gamma):
+    (n,d)=diff.shape
+    norme = np.linalg.norm(diff,axis=1)
+    cond=np.where( norme < gamma)
+    norme[ cond] = np.zeros((1,d))
+    norme[ not(cond)] = (xi-xj)
+    
 
-
-def square(xi,xj,gamma):
-    norme=np.linalg.norm(xi-xj)
-    if norme > gamma :
-        c=0
-    else:
-        c=1
-
-    return c*(xi-xj)
+    return norme
 
 def square_c(xi,xj,gamma):
     r=np.multiply(xi-xj, xi-xj)

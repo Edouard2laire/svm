@@ -7,16 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-def lgauss_test(diff,gamma=0.95):
-    #iff=xi-xj
-    norme = np.linalg.norm(diff)
-    expV=np.exp(-gamma*norme*norme)
-    return expV*diff
-def lgauss_test2(diff,gamma=0.95):
-    #iff=xi-xj
-    norme = np.linalg.norm(diff,axis=1)
-    expV=np.exp(-gamma*norme*norme)[:,None]
-    return expV*diff
+
 class MLLKM2(svm):
     name="MLLKM2"
 
