@@ -2,7 +2,7 @@
 Ce github contient les codes sources relatifs à mon stage au sein du laboratoire ETIS. 
 
 Chaque svm est batis sur le modèle de la classe svm codé dans le fichier [svm.py](https://github.com/Edouard2laire/svm/blob/master/svm.py) . 
-Chaque svm possède 3 méthodes :  
+Chaque svm possède 4 méthodes :  
 
 - init qui initialise les paramètres du modèle. 
 - fit qui fait correspondre le modèle aux données
@@ -10,17 +10,17 @@ Chaque svm possède 3 méthodes :
 - score qui teste le modèle afin de calculer sa performance. 
 
 Les fichiers correspondant aux svm sont 
-- [lsvm.py](https://github.com/Edouard2laire/svm/blob/master/lsvm.py) qui code la svm linéaire ( partie 1.1 )
+- [Lsvm.py](https://github.com/Edouard2laire/svm/blob/master/lsvm.py) qui code la svm linéaire ( partie 1.1 )
 - [SDCA.py](https://github.com/Edouard2laire/svm/blob/master/SDCA.py) qui code la svm  à noyaux ( partie 1.2.1 )
-- [llsvvm.py](https://github.com/Edouard2laire/svm/blob/master/llsvvm.py) qui code la svm localement linéaire ( partie 1.2.2) 
+- [Llsvvm.py](https://github.com/Edouard2laire/svm/blob/master/llsvvm.py) qui code la svm localement linéaire ( partie 1.2.2) 
 - [MLLKM.py](https://github.com/Edouard2laire/svm/blob/master/MLLKM.py) et [MLLKM2.py](https://github.com/Edouard2laire/svm/blob/master/MLLKM2.py) qui codent la svm multi locally linear kernel respectivement avec SKEAM( partie 2) et sans SKMEAN ( partie 2.3.2 )
-- [near.py](https://github.com/Edouard2laire/svm/blob/master/near.py) corresponds à l'algorithme vu pour la detaction de peau dans la partie 3.3.1
+- [Near.py](https://github.com/Edouard2laire/svm/blob/master/near.py) corresponds à l'algorithme vu pour la detaction de peau dans la partie 3.3.1
 
 
 Les autres fichiers fournissent des outils utile au reste du code : 
-- tool.py définit les fonctions permetant d'ouvrir les différents datasets ainsi que les fonctions noyaux
-- testManager.py permet de tester les différentes svm sur les différents datasets avec plusieurs set de paramètres. 
-- kernel.py permet l'affiche des résultats comme dans la partie 3.2 
+- [Tool.py](https://github.com/Edouard2laire/svm/blob/master/tool.py) définit les fonctions permetant d'ouvrir les différents datasets ainsi que les fonctions noyaux
+- [TestManager.py](https://github.com/Edouard2laire/svm/blob/master/testManager.py) permet de tester les différentes svm sur les différents datasets avec plusieurs set de paramètres. 
+- [Kernel.py](https://github.com/Edouard2laire/svm/blob/master/kernel.py) permet l'affiche des résultats comme dans la partie 3.2 
 
 
 ## Utilisation du gestionaire de test : 
