@@ -1,11 +1,11 @@
 # -*- coding:cp437 -*-
 
 import numpy as np
-import tool
+#import tool
 import matplotlib.pyplot as plt
 import matplotlib
-import MLLKM2
-import lsvm
+#import MLLKM2
+#import lsvm
 import matplotlib.patches as mpatches
 print("style:",matplotlib.style.available)
 matplotlib.style.use('fivethirtyeight')
@@ -13,14 +13,14 @@ plt.close('All')
 
 def conv(x,y) :
 
-    return [ (x+1.)/(13*3) , (y+1.)/(4*6) ]
+    return [ (x+1.)/(7*3) , (y+1.)/(4*6) ]
 
 tab=[]
 
 tab.append({"nom":"MLLKM(SKMEAN-gaussian)","Performance":92.2,"Training":4.7,"Predict":0.16,"color":"#6600FF"})
 tab.append({"nom":"MLLKM(SKMEAN-Component Gaussian)","Performance":90.6,"Training":3.6,"Predict":0.15,"color":"#3333FF"})
-tab.append({"nom":"MLLKM(gaussian)","Performance":93.6,"Training":9.4,"Predict":0.24,"color":"#6666FF"})
-tab.append({"nom":"MLLKM(Component gaussian)","Performance":92.1,"Training":7.6,"Predict":0.14,"color":"#6699FF"})
+tab.append({"nom":"MLLKM(gaussian)","Performance":93.6,"Training":1.4,"Predict":0.087,"color":"#6666FF"})
+tab.append({"nom":"MLLKM(Component gaussian)","Performance":95.2,"Training":1.7,"Predict":0.082,"color":"#6699FF"})
 tab.append({"nom":"SAG","Performance":79.1,"Training":0.0,"Predict":0.01,"color":"#339900"})
 tab.append({"nom":"LLSVM","Performance":94.7,"Training":4.3,"Predict":0.2,"color":"#990066"})
 tab.append({"nom":"SCDA(gaussian)","Performance":94.6,"Training":2.7,"Predict":1.9,"color":"#993300"})
@@ -63,7 +63,7 @@ predict=[]
 perf=[]
 nom=[]
 couleur=[]
-for resultat in tab3 :
+for resultat in tab :
     predict.append(resultat["Predict"])
     training.append(resultat["Training"])
     perf.append(resultat["Performance"])
@@ -75,11 +75,11 @@ for performance in perf:
     poids.append( 10**(performance/PerfMin*1)  )
 
 fig=plt.figure(1)
-plt.title("Performance des algoritmes sur le dataset DIABETES")
+plt.title("Performance des algoritmes sur le dataset Ionosphere")
 ax=fig.add_subplot(111)
 #plt.scatter(training,predict,s=None)
 plt.xlabel("<-- Temps d'entrainement rapide(ms)" )
-plt.xlim(-1,11)
+plt.xlim(-1,6)
 plt.ylim(-1,3)
 
 plt.ylabel("<-- Temps de prediction rapide(ms)")
@@ -91,9 +91,9 @@ for i in range(len(perf)):
     e.append(circ)
     plt.annotate("{}".format(i), (training[i],predict[i]),horizontalalignment='center',color="white")
     if i %2 == 0:
-        plt.annotate("{}%".format(perf[i]), (training[i],predict[i] -0.5*y ),horizontalalignment='center',color=couleur[i])
+        plt.annotate("{}%".format(perf[i]), (training[i],predict[i] -0.8*y ),horizontalalignment='center',color=couleur[i])
     else:
-        plt.annotate("{}%".format(perf[i]), (training[i],predict[i] +.35*y ),horizontalalignment='center',color=couleur[i])
+        plt.annotate("{}%".format(perf[i]), (training[i],predict[i] + 0.7*y ),horizontalalignment='center',color=couleur[i])
 
     ax.add_artist(circ)
     circ.set_clip_box(ax.bbox)

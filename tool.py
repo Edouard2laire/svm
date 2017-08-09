@@ -250,7 +250,7 @@ def linear(xi,xj,sigma):
     return max(0.0, 1 - sigma*norme*norme)
 
 def lgauss(diff,gamma=0.95):
-    #iff=xi-xj
+    #diff=xi-xj
     norme = np.linalg.norm(diff,axis=1)
     expV=np.exp(-gamma*norme*norme)[:,None]
     return expV*diff
@@ -261,23 +261,15 @@ def lgauss_c(diff,gamma=0.95):
 
 
 def square(diff,gamma):
-    (n,d)=diff.shape
     norme = np.linalg.norm(diff,axis=1)
-    cond=np.where( norme < gamma)
-    norme[ cond] = np.zeros((1,d))
-    norme[ not(cond)] = (xi-xj)
-    
+    diff[ np.where( norme > gamma ) ] = 0
+    return diff
 
-    return norme
+def square_c(diff,gamma):
+    norme=np.multiply(diff,diff)
+    diff[ np.where( norme > gamma ) ] = 0
 
-def square_c(xi,xj,gamma):
-    r=np.multiply(xi-xj, xi-xj)
-    for k in range(len(r)):
-        if r[k]> gamma:
-            r[k]=0
-        else:
-            r[k]=1
-    return np.multiply(r,xi-xj)
+    return diff
 
 
 def draw(x_e,y_e, centers, x_t, y_t, predictor, highlight=[None, None], poids=[],fig=1):
