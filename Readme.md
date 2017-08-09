@@ -18,7 +18,7 @@ Les fichiers correspondant aux svm sont
 
 
 Les autres fichiers fournissent des outils utile au reste du code : 
--tool.py définit les fonctions permetant d'ouvrir les différents datasets ainsi que les fonctions noyaux
--testManager.py permet de tester les différentes svm sur les différents datasets avec plusieurs set de paramètres. 
+- tool.py définit les fonctions permetant d'ouvrir les différents datasets ainsi que les fonctions noyaux
+- testManager.py permet de tester les différentes svm sur les différents datasets avec plusieurs set de paramètres. 
 - kernel.py permet l'affiche des résultats comme dans la partie 3.2 
 
