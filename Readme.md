@@ -22,3 +22,30 @@ Les autres fichiers fournissent des outils utile au reste du code :
 - testManager.py permet de tester les différentes svm sur les différents datasets avec plusieurs set de paramètres. 
 - kernel.py permet l'affiche des résultats comme dans la partie 3.2 
 
+
+## Utilisation du gestionaire de test : 
+Afin d'utiliser le gestionnaire de test, il faut commancer par initialiser les variables datasetPath et logPath corrspondant aux chemin d'acces vers les dossiers contenant 
+les datasets ainsi que le dossier contenant les logs. 
+
+On peut ensuite initialiser le gestionnaire de test avant de lui assigner les dataset à tester
+
+'''
+test = testManager(datasetPath=datasetPath,logPath=logPath,nbTest=3,svm=MLLKM2)
+test.addDataSet(["Skin_NonSkin.txt"],load4)
+'''
+On renseigne ensuite les paramètres à tester en faisant :
+'''
+test.addParam({'nb_anchor': 128,'pD': 0.3 ,'pB': 0.9, 't0': 666.0, 'pc': 0.01, 'pW': 0.01, 'E': 1, 'gamma': 1200, 'l': 1e-09, 'lkernel': square_c   })
+'''
+puis on lance le test avec ''' test.overview("skin-opti-square3") '''
+
+ce qui produit dans le fichier log : 
+
+'''
+ -------------- 
+Parametres: {'kmean': False, 'constructeur': {'pc': 0.1, 'nb_anchor': 64, 'lkernel': <function lgauss_c at 0x10a815400>, 'l': 1e-06, 'E': 5, 'gamma': 0.5, 'pB': 0.5, 't0': 1}}
+
+Average accuracy :0.9523809523809523 +- 0.012046772038736693 
+Training per sample :0.001074785873538158 +- 1.2566780301872397e-05 
+Test time per sample :8.271035693940663e-05 +- 6.461228043108929e-06 
+'''
